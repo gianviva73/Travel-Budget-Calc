@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Budget Calc - Digital Creator Lab</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0066ff',
+                            600: '#0052cc',
+                            700: '#003d99',
+                            800: '#0a192f',
+                            900: '#030712',
+                            accent: '#a855f7'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #030712;
+            color: #f3f4f6;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card-accent {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+        }
+        input {
+            background-color: rgba(31, 41, 55, 0.8) !important;
+            border: 1px solid rgba(75, 85, 99, 0.4) !important;
+            color: #ffffff !important;
+        }
+        input:focus {
+            border-color: #0066ff !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.2) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12 flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-gray-800/60 bg-gray-950/80 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-brand-accent flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-500/20">
+                    ✈️
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wide text-white leading-tight">Travel Budget Calc</h1>
+                    <p class="text-xs text-blue-400 font-medium">Digital Creator Lab</p>
+                </div>
+            </div>
+            
+            <button id="guideBtn" type="button" onclick="toggleGuide(event)" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-gray-200 transition-all border border-gray-700 cursor-pointer">
+                <span>❓ Guida Utente</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 pt-6 flex-grow w-full space-y-6">
+
+        <!-- Banner Guida Utente -->
+        <section id="userGuide" class="hidden glass-card rounded-2xl p-5 border-blue-500/30 transition-all duration-300 shadow-2xl">
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center gap-2 font-bold text-white">
+                    <span>🧭</span>
+                    <h2 class="text-base">Come funziona il Calcolatore?</h2>
+                </div>
+                <button type="button" onclick="hideGuide()" class="text-gray-400 hover:text-white text-sm px-2 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all">
+                    ✖
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-gray-300">
+                <div class="p-3 bg-gray-900/60 rounded-xl border border-gray-800">
+                    <div class="font-semibold text-blue-400 mb-1">1. Imposta il viaggio</div>
+                    <p>Inserisci i giorni di permanenza, il budget massimo e quanti viaggiatori siete per dividere le spese.</p>
+                </div>
+                <div class="p-3 bg-gray-900/60 rounded-xl border border-gray-800">
+                    <div class="font-semibold text-purple-400 mb-1">2. Personalizza le Spese</div>
+                    <p>Aggiungi, modifica o elimina le spese fisse (Volo, Hotel) e giornaliere (Cibo, Svago) secondo i tuoi piani.</p>
+                </div>
+                <div class="p-3 bg-gray-900/60 rounded-xl border border-gray-800">
+                    <div class="font-semibold text-emerald-400 mb-1">3. Risultati in tempo reale</div>
+                    <p>Vedi subito quanto ti resta al giorno e la quota precisa per singola persona!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE 1: Dati Base -->
+        <section class="glass-card rounded-2xl p-5 md:p-6 shadow-xl">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
+                ⚙️ Parametri Principali
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1.5">Budget Totale (€)</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400 text-sm">€</span>
+                        <input type="number" id="totalBudget" value="1200" min="0" oninput="calculateBudget()" class="w-full pl-8 pr-3 py-2 rounded-xl text-sm font-semibold transition-all">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1.5">Durata (Giorni)</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400 text-sm">📅</span>
+                        <input type="number" id="tripDays" value="7" min="1" oninput="calculateBudget()" class="w-full pl-9 pr-3 py-2 rounded-xl text-sm font-semibold transition-all">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1.5">Partecipanti (Persone)</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-400 text-sm">👥</span>
+                        <input type="number" id="travelers" value="2" min="1" oninput="calculateBudget()" class="w-full pl-9 pr-3 py-2 rounded-xl text-sm font-semibold transition-all">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD RISULTATI -->
+        <section class="glass-card-accent rounded-2xl p-5 md:p-6 shadow-2xl relative overflow-hidden">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-purple-300 mb-4 flex items-center gap-2">
+                📊 Riepilogo Budget Calcolato
+            </h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-gray-950/50 p-4 rounded-xl border border-gray-800">
+                    <span class="text-xs text-gray-400 font-medium block mb-1">Spese Fisse Totali</span>
+                    <span id="resFixedTotal" class="text-xl font-bold text-gray-200">€ 0.00</span>
+                    <span id="resFixedPerPerson" class="text-[11px] text-gray-400 block mt-1">€ 0.00 / pers.</span>
+                </div>
+
+                <div class="bg-gray-950/50 p-4 rounded-xl border border-gray-800">
+                    <span class="text-xs text-gray-400 font-medium block mb-1">Rimasto per le Spese</span>
+                    <span id="resRemainingTotal" class="text-xl font-bold text-emerald-400">€ 0.00</span>
+                    <span id="resRemainingPerPerson" class="text-[11px] text-gray-400 block mt-1">€ 0.00 / pers.</span>
+                </div>
+
+                <div class="bg-gray-950/50 p-4 rounded-xl border border-gray-800">
+                    <span class="text-xs text-gray-400 font-medium block mb-1">Disponibile / Giorno</span>
+                    <span id="resDailyTotal" class="text-xl font-bold text-blue-400">€ 0.00</span>
+                    <span id="resDailyPerPerson" class="text-[11px] text-blue-300/80 block mt-1">€ 0.00 / pers.</span>
+                </div>
+
+                <div class="bg-gray-950/50 p-4 rounded-xl border border-gray-800">
+                    <span class="text-xs text-gray-400 font-medium block mb-1">Margine / Extra Giorno</span>
+                    <span id="resMarginDaily" class="text-xl font-bold text-purple-400">€ 0.00</span>
+                    <span id="resMarginStatus" class="text-[11px] text-purple-300/80 block mt-1">Dopostima spese</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE 2: Voci Spese Fisse -->
+        <section class="glass-card rounded-2xl p-5 md:p-6 shadow-xl">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
+                <div>
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                        🧾 Spese Fisse & Pre-pagate
+                    </h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Hotel, trasporti, assicurazioni o spese già sostenute</p>
+                </div>
+                <button type="button" onclick="addExpense('fixed')" class="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all">
+                    ➕ Aggiungi Voce
+                </button>
+            </div>
+            <div id="fixedExpensesList" class="space-y-2.5"></div>
+        </section>
+
+        <!-- SEZIONE 3: Voci Spese Giornaliere -->
+        <section class="glass-card rounded-2xl p-5 md:p-6 shadow-xl">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
+                <div>
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                        🍽️ Stima Spese Giornaliere (per giorno)
+                    </h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Cibo, trasporti locali, musei o piccoli sfizi quotidiani</p>
+                </div>
+                <button type="button" onclick="addExpense('daily')" class="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all">
+                    ➕ Aggiungi Voce
+                </button>
+            </div>
+            <div id="dailyExpensesList" class="space-y-2.5"></div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 border-t border-gray-800/60 pt-6 text-center text-xs text-gray-400">
+        <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p>© 2026 <span class="text-gray-200 font-semibold">Digital Creator Lab</span>. Tutti i diritti riservati.</p>
+            <div class="flex items-center gap-2 text-gray-400">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Web App Gratuita & Pronto Uso</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Logic Script Completo -->
+    <script>
+        var fixedExpenses = [
+            { id: 1, name: 'Voli / Trasporti Principali', cost: 250 },
+            { id: 2, name: 'Hotel / Alloggio', cost: 350 },
+            { id: 3, name: 'Assicurazione Viaggio', cost: 40 }
+        ];
+
+        var dailyExpenses = [
+            { id: 1, name: 'Pasti & Cibo', cost: 35 },
+            { id: 2, name: 'Trasporti Locali / Taxi', cost: 10 },
+            { id: 3, name: 'Ingressi & Attrazioni', cost: 15 }
+        ];
+
+        function toggleGuide(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var guide = document.getElementById('userGuide');
+            if (guide) {
+                guide.classList.toggle('hidden');
+            }
+        }
+
+        function hideGuide() {
+            var guide = document.getElementById('userGuide');
+            if (guide) {
+                guide.classList.add('hidden');
+            }
+        }
+
+        function renderExpenses(type) {
+            var listContainer = document.getElementById(type === 'fixed' ? 'fixedExpensesList' : 'dailyExpensesList');
+            var items = type === 'fixed' ? fixedExpenses : dailyExpenses;
+            
+            if (!listContainer) return;
+            listContainer.innerHTML = '';
+
+            if (items.length === 0) {
+                listContainer.innerHTML = '<p class="text-xs text-gray-400 italic py-2">Nessuna voce inserita.</p>';
+                return;
+            }
+
+            items.forEach(function(item) {
+                var div = document.createElement('div');
+                div.className = "flex items-center gap-2 bg-gray-900/60 p-2.5 rounded-xl border border-gray-800/80";
+                div.innerHTML = `
+                    <input type="text" value="${item.name}" onchange="updateExpenseName('${type}', ${item.id}, this.value)" 
+                           class="w-full bg-transparent text-xs sm:text-sm font-medium p-1 rounded" placeholder="Nome voce...">
+                    <div class="flex items-center gap-1 min-w-[110px]">
+                        <span class="text-xs text-gray-400">€</span>
+                        <input type="number" value="${item.cost}" min="0" oninput="updateExpenseCost('${type}', ${item.id}, this.value)" 
+                               class="w-20 bg-gray-800 text-xs sm:text-sm font-semibold rounded-lg px-2 py-1 text-right">
+                    </div>
+                    <button type="button" onclick="removeExpense('${type}', ${item.id})" class="text-gray-400 hover:text-red-400 px-2 py-1 transition-colors">
+                        🗑️
+                    </button>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function addExpense(type) {
+            var items = type === 'fixed' ? fixedExpenses : dailyExpenses;
+            var newId = items.length > 0 ? Math.max.apply(Math, items.map(function(i) { return i.id; })) + 1 : 1;
+            
+            items.push({
+                id: newId,
+                name: type === 'fixed' ? 'Nuova Spesa Fissa' : 'Nuova Spesa Giornaliera',
+                cost: 0
+            });
+
+            renderExpenses(type);
+            calculateBudget();
+        }
+
+        function updateExpenseName(type, id, newName) {
+            var items = type === 'fixed' ? fixedExpenses : dailyExpenses;
+            var item = items.find(function(i) { return i.id === id; });
+            if (item) item.name = newName;
+        }
+
+        function updateExpenseCost(type, id, newCost) {
+            var items = type === 'fixed' ? fixedExpenses : dailyExpenses;
+            var item = items.find(function(i) { return i.id === id; });
+            if (item) item.cost = parseFloat(newCost) || 0;
+            calculateBudget();
+        }
+
+        function removeExpense(type, id) {
+            if (type === 'fixed') {
+                fixedExpenses = fixedExpenses.filter(function(i) { return i.id !== id; });
+            } else {
+                dailyExpenses = dailyExpenses.filter(function(i) { return i.id !== id; });
+            }
+            renderExpenses(type);
+            calculateBudget();
+        }
+
+        function calculateBudget() {
+            var totalBudgetInput = document.getElementById('totalBudget');
+            var tripDaysInput = document.getElementById('tripDays');
+            var travelersInput = document.getElementById('travelers');
+
+            if (!totalBudgetInput || !tripDaysInput || !travelersInput) return;
+
+            var totalBudget = parseFloat(totalBudgetInput.value) || 0;
+            var days = Math.max(1, parseInt(tripDaysInput.value) || 1);
+            var travelers = Math.max(1, parseInt(travelersInput.value) || 1);
+
+            var totalFixed = fixedExpenses.reduce(function(sum, item) { return sum + item.cost; }, 0);
+            var remainingBudget = totalBudget - totalFixed;
+            var dailyAvailable = remainingBudget / days;
+            var totalDailyEstimated = dailyExpenses.reduce(function(sum, item) { return sum + item.cost; }, 0);
+            var marginDaily = dailyAvailable - totalDailyEstimated;
+
+            document.getElementById('resFixedTotal').innerText = '€ ' + totalFixed.toFixed(2);
+            document.getElementById('resFixedPerPerson').innerText = '€ ' + (totalFixed / travelers).toFixed(2) + ' / pers.';
+
+            var remEl = document.getElementById('resRemainingTotal');
+            remEl.innerText = '€ ' + remainingBudget.toFixed(2);
+            remEl.className = 'text-xl font-bold ' + (remainingBudget >= 0 ? 'text-emerald-400' : 'text-red-400');
+            document.getElementById('resRemainingPerPerson').innerText = '€ ' + (remainingBudget / travelers).toFixed(2) + ' / pers.';
+
+            var dailyEl = document.getElementById('resDailyTotal');
+            dailyEl.innerText = '€ ' + dailyAvailable.toFixed(2);
+            dailyEl.className = 'text-xl font-bold ' + (dailyAvailable >= 0 ? 'text-blue-400' : 'text-red-400');
+            document.getElementById('resDailyPerPerson').innerText = '€ ' + (dailyAvailable / travelers).toFixed(2) + ' / pers.';
+
+            var marginEl = document.getElementById('resMarginDaily');
+            marginEl.innerText = '€ ' + marginDaily.toFixed(2);
+            marginEl.className = 'text-xl font-bold ' + (marginDaily >= 0 ? 'text-purple-400' : 'text-red-400');
+
+            var statusEl = document.getElementById('resMarginStatus');
+            if (marginDaily >= 0) {
+                statusEl.innerText = '€ ' + (marginDaily / travelers).toFixed(2) + ' / pers. per imprevisti';
+                statusEl.className = "text-[11px] text-purple-300/80 block mt-1";
+            } else {
+                statusEl.innerText = 'Superi il budget di € ' + Math.abs(marginDaily).toFixed(2) + '/gg';
+                statusEl.className = "text-[11px] text-red-400 block mt-1 font-semibold";
+            }
+        }
+
+        // Inizializzazione immediata
+        document.addEventListener('DOMContentLoaded', function() {
+            renderExpenses('fixed');
+            renderExpenses('daily');
+            calculateBudget();
+
+            document.addEventListener('click', function(e) {
+                var guide = document.getElementById('userGuide');
+                var btn = document.getElementById('guideBtn');
+                if (guide && !guide.classList.contains('hidden') && !guide.contains(e.target) && !btn.contains(e.target)) {
+                    guide.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
